@@ -1,24 +1,20 @@
-# Work Agent — design and authoring
+# agent/ — design docs
 
-This folder holds **human-facing agent design** and **draft** definitions. Runtime assets live elsewhere (see table below).
+Human-facing design notes for bogart. Nothing here is loaded at runtime.
 
-| Path | Purpose |
+| File | Purpose |
 | --- | --- |
-| [`context.md`](context.md) | Situation and task (why this agent exists) |
-| [`architecture.md`](architecture.md) | Technical architecture (clients, MCP, knowledge, workflows) |
-| [`mvp-cursor.md`](mvp-cursor.md) | **MVP: try the agent in Cursor** (install, prompts, success criteria) |
-| [`define-rules/`](define-rules/) | Draft Cursor rules → promote to `.cursor/rules/` |
-| [`define-skills/`](define-skills/) | Draft skills → promote to `.cursor/skills/` |
-| [`define-workflows/`](define-workflows/) | Draft workflows → promote to `.cursor/workflows/` |
+| [context.md](context.md) | Who bogart works for and what for — **fill this in** |
+| [architecture.md](architecture.md) | How the pieces fit together, and what is deliberately absent |
 
-## Production vs draft
+Runtime assets live elsewhere:
 
-| Concern | Draft | Production |
-| --- | --- | --- |
-| Rules | `agent/define-rules/` | `.cursor/rules/` |
-| Skills | `agent/define-skills/` | `.cursor/skills/` |
-| Workflows | `agent/define-workflows/` | `.cursor/workflows/` |
-| Knowledge | (author in repo) | `./knowledge/` |
-| MCP (Cursor tools) | — | `packages/mcp-server/` + [`.cursor/mcp.json`](../.cursor/mcp.json) |
+| Asset | Path |
+| --- | --- |
+| Rules | `CLAUDE.md` (repo root) |
+| Skills | `.claude/skills/` |
+| Commands | `.claude/commands/` |
+| Knowledge | `knowledge/` |
+| Decisions | `adr/` |
 
-Entrypoint for Cursor agents: [`AGENTS.md`](../AGENTS.md) and [`.cursor/MCP.md`](../.cursor/MCP.md).
+There is no draft-versus-production split. Edit runtime assets directly — `.claude/` is the live location, not a staging area.

@@ -1,44 +1,50 @@
 ---
 id: continuous-learning-gate
-title: Continuous-learning gate — workflow vs rule-only
-tags: continuous-learning, workflows, cursor, ops
+title: Why the task completion gate is built the way it is
+tags: continuous-learning, completion-gate, agent-ops
 created: "2026-07-27"
-updated: "2026-07-27"
-source: retrospective
+updated: "2026-07-28"
+source: retrospective; carried forward from the upstream Cursor project
 related:
-  - adr/ADR-001-learn-knowledge-completion-gate.md
-  - adr/ADR-002-structured-task-done-askquestion.md
+  - getting-started
 ---
 
-# Continuous-learning gate — workflow vs rule-only
+# Why the task completion gate is built the way it is
 
 ## Summary
 
-Relying on `.cursor/rules/continuous-learning.mdc` alone did not produce samectx sync or retrospective after a completed **learn-knowledge** run. The agent stored `./knowledge/` and stopped without a separate task-done gate. User **yes** to research confirmation was scoped to `knowledge_write`, not task completion.
+An always-on rule saying "run a retrospective when the task is done" **did not work**. In the original Cursor project, a completed research run stored its note to `./knowledge/` and stopped. No session sync, no retrospective.
 
-## Follow-up (2026-07-27)
+The diagnosis: the user had said **yes** earlier in that session — but to *"is this research good enough to store?"*. The agent treated that yes as covering task completion too. One confirmation silently absorbed another.
 
-Task-done confirmation must use **AskQuestion** with explicit options (**Mark task done** / Not yet / Pause), not plain chat *Can I mark this as done?* — see `.cursor/workflows/prompts/_shared/task-completion-gate.md` and updated **`99-task-completion-gate.mdc`**. The Cursor “How did the agent do?” bar is not agent-controllable.
+This is the origin of the gate's central rule: **research yes is not task-done yes.**
 
-## Follow-up (2026-07-27, hooks)
+## Lessons
 
-**Trigger stack:** (1) always-on rules → agent must **AskQuestion**; (2) `workflow_run` YAML steps; (3) `.cursor/hooks.json` — `afterFileEdit` counts edits, `stop` may inject follow-up, `postToolUse` on `knowledge_write` reminds store ≠ task done. Hooks require **Cursor Hooks** enabled and project `.cursor/hooks.json` present (deploy copies with IDE assets).
+1. **A separate, structured confirmation is required.** Not a plain chat "can I mark this done?", which collides with every other yes/no in the thread. It must be a distinct options prompt — **Mark task done** / **Not yet** / **Pause here** — and only the first option authorizes anything.
 
-## Evidence
+2. **Rules alone do not invoke tools.** An always-on instruction states an expectation; it does not guarantee the model acts on it at the right moment. If the gate gets skipped, it is because the turn ended without the question being asked.
 
-- Rule requires: ask before closing → on confirm → samectx → retrospective.
-- **learn-knowledge** ended at `04-store.md` with no completion step.
-- `workflow_run` embeds skills/prompts but does not execute samectx or retrospective server-side.
-- Global DoD retrospective gate was also skipped in the same session.
+3. **Prompts must name the distinction explicitly.** Every step that asks for a confirmation should say what that confirmation does and does not authorize.
 
-## Lesson / guidance
+4. **Split the outputs.** Session context goes to memory; decisions go to `./adr/`; reusable lessons go to `./knowledge/` (usually `ops/`). Three destinations, chosen by what kind of thing was learned.
 
-1. For major interactive workflows, add explicit YAML steps: **task-completion-gate** prompt → **samectx** skill → **retrospective** skill (see `agent/define-workflows/workflow.md`).
-2. Prompts must state that **research/store yes ≠ task-done yes**.
-3. Verify project `.cursor/rules/` are active in Cursor for the workspace; treat `AGENTS.md` as backup, not the only hook.
-4. Retrospective outputs: ADRs → `./adr/`; ops/process lessons → `./knowledge/ops/` (domain/method notes may use `methods/`, `insights/`, etc.).
+## Port to Claude Code (2026-07-28)
 
-## Links
+The gate moved from Cursor to Claude Code with the rest of the project. What changed:
 
-- [ADR-001](../../adr/ADR-001-learn-knowledge-completion-gate.md)
-- `.cursor/workflows/prompts/learn-knowledge/05-task-completion-gate.md`
+| Was | Now |
+| --- | --- |
+| `continuous-learning.mdc` + `99-task-completion-gate.mdc` | One section in `CLAUDE.md` |
+| `AskQuestion` tool | `AskUserQuestion` |
+| YAML workflow steps loading the gate | Steps in `.claude/commands/learn-knowledge.md` and `build-skill.md` |
+| `.cursor/hooks.json` enforcing it mechanically | **Not ported** — see below |
+| `samectx sync` CLI | The rebuilt **samectx** skill, writing to Claude Code memory |
+
+The reasoning above survives the port unchanged, because it was about how confirmations get conflated, not about any particular IDE.
+
+## Open question: hooks
+
+The Cursor version added `hooks.json` — counting file edits, injecting a follow-up on stop — precisely because rules alone proved unreliable. That mechanism was **not** carried over. Claude Code's equivalent is a `Stop` hook in `.claude/settings.json`, and the original hook scripts are bash, which needs rewriting for Windows.
+
+The current bet is that the always-on `CLAUDE.md` instruction is enough on its own. **If the gate starts getting skipped in practice, that bet was wrong** — add the `Stop` hook then. Worth watching rather than assuming.
