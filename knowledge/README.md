@@ -50,3 +50,4 @@ Never write secrets, API keys, or credentials here. It is git-tracked.
 | [methods/getting-started.md](methods/getting-started.md) | How to use bogart | 2026-07-28 |
 | [methods/2026-07-27-ideo-design-thinking-five-modes.md](methods/2026-07-27-ideo-design-thinking-five-modes.md) | Design thinking — five modes | 2026-07-27 |
 | [ops/continuous-learning-gate.md](ops/continuous-learning-gate.md) | Why the completion gate is built the way it is | 2026-07-28 |
+| [ops/skill-system-fails-silently.md](ops/skill-system-fails-silently.md) | Broken skills produce no error — what to verify by hand | 2026-07-29 |

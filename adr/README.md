@@ -47,4 +47,7 @@ ADRs are immutable. Never edit a past decision — write a new ADR that supersed
 
 ## Index
 
-None yet. The first will be written at the next retrospective.
+| ADR | Decision | Date |
+| --- | --- | --- |
+| [ADR-001](ADR-001-domain-neutral-by-default.md) | Domain-neutral skills; specificity comes from `agent/context.md` | 2026-07-29 |
+| [ADR-002](ADR-002-slash-commands-replace-workflow-engine.md) | Two slash commands replace the workflow engine and its 16 prompts | 2026-07-29 |
